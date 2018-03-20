@@ -17,10 +17,10 @@ final class Application {
     func configureMainInterface(in window: UIWindow) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let navigationController = UINavigationController()
-        let networkNavigator = DefaultCountriesNavigator.init(navigationController: navigationController, storyBoard: storyboard)
+        let countriesCoordinator = DefaultCountriesCoordinator(navigationController: navigationController, storyBoard: storyboard)
         window.rootViewController = navigationController
         
-        networkNavigator.toCountries()
+        countriesCoordinator.toCountries()
     }
 }
 

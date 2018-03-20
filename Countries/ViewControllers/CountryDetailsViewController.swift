@@ -22,38 +22,32 @@ class CountryDetailsViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupAppearance()
+        setupViewModel()
+    }
+    
+    private func setupAppearance() {
         tableView.refreshControl = UIRefreshControl()
         title = "Country Details"
+    }
+    
+    private func setupViewModel() {
+        
         let pull = tableView.refreshControl!.rx
             .controlEvent(.valueChanged)
             .asDriver()
         let viewWillAppear = rx.sentMessage(#selector(UIViewController.viewWillAppear(_:))).mapToVoid()
-            .asDriver(onErrorJustReturn: ())
+            .asDriverOnErrorJustComplete()
         let input = CountryDetailsViewModel.Input(refresh: Driver.merge(viewWillAppear, pull))
         
         let output = viewModel.bind(input: input)
         
-        output.countries.drive(onNext: { (countries) in
-            if let country = countries.first {
-                self.nameLabel.text = country.name
-                self.capitalLabel.text = country.capital
-                self.populationLabel.text = String(country.population ?? 0)
-                
-                if let currencies = country.currencies {
-                    var currencyString = ""
-                    currencyString = currencies.map { "\($0.name ?? "") (\($0.symbol ?? ""))" }
-                        .joined(separator: ", ")
-                    self.currenciesLabel.text = currencyString
-                }
-                else {
-                    self.currenciesLabel.text = ""
-                }
-                
-                if let borders = country.borders {
-                    let joiner = ", "
-                    self.borderLabel.text = borders.joined(separator: joiner)
-                }
-            }
+        output.countries.drive(onNext: { [weak self] (countryModel) in
+            self?.nameLabel.text = countryModel.name
+            self?.capitalLabel.text = countryModel.capital
+            self?.populationLabel.text = countryModel.population
+            self?.borderLabel.text = countryModel.borders
+            self?.currenciesLabel.text = countryModel.currencies
         }).disposed(by: disposeBag)
         
         output.fetching

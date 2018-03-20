@@ -17,8 +17,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let window = UIWindow(frame: UIScreen.main.bounds)
         Application.shared.configureMainInterface(in: window)
         self.window = window
-        
         return true
     }
-    
 }

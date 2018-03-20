@@ -1,3 +1,11 @@
+//
+//  Reusable.swift
+//  Countries
+//
+//  Created by Mikhail Polyevin on 18/03/2018.
+//  Copyright © 2018 MP. All rights reserved.
+//
+
 import UIKit
 
 protocol Reusable {
@@ -10,12 +18,10 @@ extension Reusable {
     }
 }
 
-extension UITableViewCell: Reusable {}
-
 extension UIViewController: Reusable {}
 
 extension UIStoryboard {
-    func instantiateViewController<T: Reusable>(ofType type: T.Type = T.self) -> T where T: UIViewController {
+    func instantiateViewController<T>(ofType type: T.Type = T.self) -> T where T: UIViewController {
         guard let viewController = instantiateViewController(withIdentifier: type.reuseID) as? T else {
             fatalError()
         }

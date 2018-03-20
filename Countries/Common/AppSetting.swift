@@ -11,8 +11,10 @@ import Foundation
 final class AppSetting {
     static let shared = AppSetting()
     
-    let defaultBaseUrlString = "https://restcountries.eu/rest/v2"
+    private let defaultBaseUrlString = "https://restcountries.eu/rest/v2"
     lazy var baseUrl = URL(string: defaultBaseUrlString)!
-     
+    let numberOfRetryAttempts = 3
+    let animationThrottleInterval = 0.3
+    
     private init() {}
 }

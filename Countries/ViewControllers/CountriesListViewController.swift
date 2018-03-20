@@ -6,28 +6,32 @@
 //  Copyright © 2018 MP. All rights reserved.
 //
 
-//Обработка ошибок
-//FILTER RESPONSE.
 import RxSwift
 import RxCocoa
 
 class CountriesListViewController: UIViewController {
     
     @IBOutlet private var tableView: UITableView!
-    
     private let disposeBag = DisposeBag()
     var viewModel: AllCountriesViewModel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupAppearance()
+        setupViewModel()
+    }
+    
+    private func setupAppearance() {
         title = "Countries"
         tableView.refreshControl = UIRefreshControl()
-        
+    }
+    
+    private func setupViewModel() {
         let pull = tableView.refreshControl!.rx
             .controlEvent(.valueChanged)
             .asDriver()
         let viewWillAppear = rx.sentMessage(#selector(UIViewController.viewWillAppear(_:))).mapToVoid()
-            .asDriver(onErrorJustReturn: ())
+            .asDriverOnErrorJustComplete()
         let itemSelected = tableView.rx.itemSelected
         
         let input = AllCountriesViewModel.Input(refresh: Driver.merge(viewWillAppear, pull), selection: itemSelected.asDriver())
@@ -40,10 +44,10 @@ class CountriesListViewController: UIViewController {
         output.fetching
             .drive(tableView.refreshControl!.rx.isRefreshing)
             .disposed(by: disposeBag)
-        //WARNING: should use cell model
-        output.countries.drive(tableView.rx.items(cellIdentifier: "TableViewCell", cellType: UITableViewCell.self)) { tv, viewModel, cell in
-            cell.textLabel?.text = viewModel.name
-            cell.detailTextLabel?.text = "Population: \(viewModel.population ?? 0)"
+        
+        output.countries.drive(tableView.rx.items(cellIdentifier: "TableViewCell", cellType: UITableViewCell.self)) { i, model, cell in
+            cell.textLabel?.text = model.name
+            cell.detailTextLabel?.text = model.population
             }.disposed(by: disposeBag)
     }
 }

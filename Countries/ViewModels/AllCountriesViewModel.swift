@@ -9,11 +9,13 @@
 import RxSwift
 import RxCocoa
 
-struct CountryCellModel {
-    let name: String?
+struct CountryPresentationModel {
+    let name: String
+    let population: String
     
-    init(country: Country) {
-        name = country.name
+    init(with country: Country) {
+        name = country.name ?? ""
+        population = "Population: \(String(country.population ?? 0))"
     }
 }
 
@@ -25,12 +27,12 @@ struct AllCountriesViewModel: ViewModelType {
     }
     
     struct Output {
-        let selectedCountry: Driver<Country>
-        let countries: Driver<[Country]>
+        let selectedCountry: Driver<CountryPresentationModel>
+        let countries: Driver<[CountryPresentationModel]>
         let fetching: Driver<Bool>
     }
     
-    private let navigator: CountriesNavigator
+    private let coordinator: CountriesCoordinator
     
     func bind(input: Input) -> Output {
         let activityIndicator = ActivityIndicator()
@@ -38,26 +40,36 @@ struct AllCountriesViewModel: ViewModelType {
         let allCountriesDriver = input.refresh.flatMapLatest {
             return CountriesService
                 .allContries()
+                .map { countries in
+                    return countries.map {
+                        CountryPresentationModel(with: $0)
+                    }
+                }
                 .trackActivity(activityIndicator)
-                .debug()
-                .asDriver(onErrorJustReturn: [])
+                .trackError(self.coordinator.errorPresenter)
+                .retry(AppSetting.shared.numberOfRetryAttempts)
+                .asDriverOnErrorJustComplete()
         }
         
         let fetching = activityIndicator.asDriver()
         
         let selectedCountry = input.selection
-            .withLatestFrom(allCountriesDriver) { (indexPath, countries) -> Country in
+            .withLatestFrom(allCountriesDriver) { indexPath, countries in
                 return countries[indexPath.row]
             }
-            .do(onNext: { country in //weak?
-                self.navigator.toCountry(country)
+            .do(onNext: { country in
+                guard !country.name.isEmpty else { return }
+                self.coordinator.toCountry(country.name)
             })
         
-        return Output( selectedCountry: selectedCountry, countries: allCountriesDriver, fetching: fetching)
+        return Output(
+            selectedCountry: selectedCountry,
+            countries: allCountriesDriver,
+            fetching: fetching
+        )
     }
     
-    init(navigator: CountriesNavigator) {
-        self.navigator = navigator
+    init(coordinator: CountriesCoordinator) {
+        self.coordinator = coordinator
     }
-    
 }

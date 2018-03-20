@@ -37,7 +37,6 @@ extension CountriesTarget: TargetType {
     
     var task: Task {
         switch self {
-        //fast decision for filtering
         case .all:
             return .requestParameters(parameters: ["fields" : ["name", "population"]], encoding: URLEncoding.default)
         case .country:
@@ -48,5 +47,4 @@ extension CountriesTarget: TargetType {
     var headers: [String : String]? {
         return .none
     }
-    
 }

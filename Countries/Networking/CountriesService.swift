@@ -14,16 +14,13 @@ final class CountriesService {
     
     static func allContries() -> Observable<[Country]> {
         return provider.rx.request(.all)
-            .filterSuccessfulStatusCodes()
             .map([Country].self)
             .asObservable()
     }
     
     static func country(name: String) -> Observable<[Country]> {
         return provider.rx.request(.country(name))
-            .filterSuccessfulStatusCodes()
             .map([Country].self)
-            .debug()
             .asObservable()
     }
     

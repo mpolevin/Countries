@@ -6,8 +6,6 @@
 //  Copyright © 2018 MP. All rights reserved.
 //
 
-import Foundation
-
 struct Country: Decodable {
     var name: String?
     var capital: String?
@@ -15,10 +13,3 @@ struct Country: Decodable {
     var currencies: [Currency]?
     var borders: [String]?
 }
-
-struct Currency: Decodable {
-    var code: String?
-    var name: String?
-    var symbol: String?
-}
-
